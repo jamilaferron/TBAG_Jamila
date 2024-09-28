@@ -39,13 +39,17 @@ class Room():
     
 
   def get_details(self):
-    print("")
-    print(f"You are in the {self.name}")
-    print("-------------------------")
-    print(self.description)
-    for direction in self.linked_rooms:
-      room = self.linked_rooms[direction]
-      print(f"The {room.get_name()} is {direction}")
+    # Basic details about the room
+    string = f"\n You are in the {self.name} \n ------------------------- \n {self.description}\n"
+    
+    # Include directions to linked rooms
+    if self.linked_rooms:
+        string += "You can go to:\n"
+        for direction in self.linked_rooms:
+            room = self.linked_rooms[direction]
+            string += f"The {room.get_name()} which is to the {direction}\n"
+    
+    return string
       
   def move(self, direction):
     if direction in self.linked_rooms:

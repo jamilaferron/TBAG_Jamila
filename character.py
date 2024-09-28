@@ -8,8 +8,8 @@ class Character():
     return self.name
   
   def describe(self):
-    print(f"{self.name} is in this room!")
-    print( self.description)
+    string = f"{self.name} is in this room! \n {self.description}"
+    return string
 
   def set_conversation(self, conversation):
       self.conversation = conversation
