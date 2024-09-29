@@ -1,28 +1,45 @@
-from character import Enemy
-from item import Item
+from character import Enemy, Friend
+from item import Weapon, Gift
 from room import Room
 import curses
 
 kitchen = Room("kitchen")
 kitchen.set_description("A dank and dirty room buzzing with flies")
+
 ballroom = Room("ballroom")
 ballroom.set_description("A vast room with a shiny wooden floor")
 dining_hall = Room("dining hall")
 dining_hall.set_description("A large room with ornate golden decorations")
+living_room = Room("living room")
+living_room.set_description("A lived in room")
 
 dave = Enemy("Dave", "A smelly zombie")
 dave.set_conversation("Brrlgrh... rgrhl... brains...")
 dave.set_weakness("cheese")
 
-cheese = Item("cheese", "A big block of smelly cheese")
-sword = Item("sword", "A silver sword")
+bart = Enemy("Bart", "A smelly zombie")
+bart.set_conversation("Brrlgrh... rgrhl... brains...")
+bart.set_weakness("cheese")
+
+jane = Friend("Jane", "A fellow zombie slayer")
+
+cheese = Weapon("cheese", "A big block of smelly cheese")
+sword = Weapon("sword", "A silver sword")
+health_stone = Gift("stone", "A stone to restore health")
 
 kitchen.link_room(dining_hall, "south")
 kitchen.set_item(sword)
 dining_hall.link_room(ballroom,"west")
+living_room.link_room(dining_hall, "west")
 
 dining_hall.set_character(dave)
-dining_hall.set_item(cheese)
+dining_hall.set_item(health_stone)
+ballroom.set_character(jane)
+ballroom.set_item(cheese)
+living_room.set_character(bart)
+living_room.set_item(health_stone)
+
+
 
 
 def display_inventory(stdscr, inventory):
@@ -41,6 +58,16 @@ def inventory_add_item(stdscr, inventory, item):
 
 def fight_mode(stdscr, inventory, inhabitant):
     count = 0  # To keep track of the selected weapon
+    weapons = [item for item in inventory if isinstance(item, Weapon)]  # Filter only weapon items
+
+    if not weapons:  # Check if there are no weapons available
+      stdscr.addstr(0, 0, f"There are no weapons available to fight {inhabitant.get_name()}!")
+      stdscr.addstr(1, 0, "Press any key to return to the game...")
+      stdscr.refresh()
+      stdscr.nodelay(False)
+      stdscr.getch()  # Wait for key press
+      stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
+      return "lost"  # Return a default result if no weapons
 
     stdscr.clear()  # Clear the screen for the fight mode interface
     stdscr.addstr(0, 0, "Fight Mode:")
@@ -48,30 +75,30 @@ def fight_mode(stdscr, inventory, inhabitant):
 
     # Loop to display and select weapons from inventory
     while True:
-        stdscr.clear()
-        stdscr.addstr(0, 0, "Fight Mode:")
-        stdscr.addstr(1, 0, f"What will you fight {inhabitant.get_name()} with?")
+      stdscr.clear()
+      stdscr.addstr(0, 0, "Fight Mode:")
+      stdscr.addstr(1, 0, f"What will you fight {inhabitant.get_name()} with?")
 
-        # Display inventory options
-        for idx, item in enumerate(inventory):
-            if idx == count:
-                stdscr.addstr(3 + idx, 0, f"> {item.get_name()}")  # Highlight selected weapon
-            else:
-                stdscr.addstr(3 + idx, 0, f"  {item.get_name()}")
+      # Display inventory options for only weapons
+      for idx, item in enumerate(weapons):
+          if idx == count:
+              stdscr.addstr(3 + idx, 0, f"> {item.get_name()}")  # Highlight selected weapon
+          else:
+              stdscr.addstr(3 + idx, 0, f"  {item.get_name()}")
 
-        stdscr.addstr(len(inventory) + 5, 0, "Use UP/DOWN arrow keys to choose, ENTER to confirm.")
+      stdscr.addstr(len(weapons) + 5, 0, "Use UP/DOWN arrow keys to choose, ENTER to confirm.")
 
-        stdscr.refresh()  # Refresh the screen to show the changes
-        key = stdscr.getch()  # Capture user input
+      stdscr.refresh()  # Refresh the screen to show the changes
+      key = stdscr.getch()  # Capture user input
 
         # Handle arrow key navigation
-        if key == curses.KEY_UP and count > 0:
-            count -= 1  # Move up in the list
-        elif key == curses.KEY_DOWN and count < len(inventory) - 1:
-            count += 1  # Move down in the list
-        elif key == curses.KEY_ENTER or key in [10, 13]:  # ENTER key (Linux: 10, Windows: 13)
-            selected_weapon = inventory[count]
-            break  # Exit the loop when the player confirms their selection
+      if key == curses.KEY_UP and count > 0:
+          count -= 1  # Move up in the list
+      elif key == curses.KEY_DOWN and count < len(weapons) - 1:
+          count += 1  # Move down in the list
+      elif key == curses.KEY_ENTER or key in [10, 13]:  # ENTER key (Linux: 10, Windows: 13)
+          selected_weapon = weapons[count]  # Select the weapon from the filtered list
+          break  # Exit the loop when the player confirms their selection
 
     # Show the selected weapon
     stdscr.clear()
@@ -101,9 +128,82 @@ def fight_mode(stdscr, inventory, inhabitant):
     # Wait for the user to press a key to proceed
     stdscr.nodelay(False)
     stdscr.getch()  # Wait for key press
-    stdscr.nodelay(True)  # Re-enable non-blocking mode for further game play
+    stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
 
     return fight_result  # Return whether the player won or lost
+
+def gift_mode(stdscr, inventory, inhabitant):
+  count = 0  # To keep track of the selected gift
+  gifts = [item for item in inventory if isinstance(item, Gift)]  # Filter only gift items
+  
+  if not gifts:  # Check if there are no gifts available
+    stdscr.addstr(0, 0, f"There are no gifts available to give to {inhabitant.get_name()}!")
+    stdscr.addstr(1, 0, "Press any key to return to the game...")
+    stdscr.refresh()
+    stdscr.nodelay(False)
+    stdscr.getch()  # Wait for key press
+    stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
+    return "no_gifts"  # Return a status indicating no gifts available
+  
+  stdscr.clear()  # Clear the screen for the gift mode interface
+  stdscr.addstr(0, 0, "Gift Mode:")
+  stdscr.addstr(1, 0, f"What will you gift to {inhabitant.get_name()}?")
+
+  # Loop to display and select gifts from inventory
+  while True:
+    stdscr.clear()
+    stdscr.addstr(0, 0, "Gift Mode:")
+    stdscr.addstr(1, 0, f"What will you gift to {inhabitant.get_name()}?")
+
+    # Display inventory options for only gifts
+    for idx, item in enumerate(gifts):
+      if idx == count:
+        stdscr.addstr(3 + idx, 0, f"> {item.get_name()}")  # Highlight selected gift
+      else:
+        stdscr.addstr(3 + idx, 0, f"  {item.get_name()}")
+
+    stdscr.addstr(len(gifts) + 5, 0, "Use UP/DOWN arrow keys to choose, ENTER to confirm, 'q' to quit.")
+    stdscr.refresh()  # Refresh the screen to show the changes
+    key = stdscr.getch()  # Capture user input
+
+    # Handle arrow key navigation
+    if key == curses.KEY_UP and count > 0:
+      count -= 1  # Move up in the list
+    elif key == curses.KEY_DOWN and count < len(gifts) - 1:
+      count += 1  # Move down in the list
+    elif key == ord('q'):  # Check if 'q' is pressed
+      return "quit"  # Exit gifting mode and return to gameplay, currently has to be pressed twice
+    elif key == curses.KEY_ENTER or key in [10, 13]:  # ENTER key (Linux: 10, Windows: 13)
+      selected_gift = gifts[count]  # Select the gift from the filtered list
+      break  # Exit the loop when the player confirms their selection
+
+  # Show the selected gift
+  stdscr.clear()
+  stdscr.addstr(0, 0, f"You selected the {selected_gift.get_name()} to gift to {inhabitant.get_name()}.")
+  stdscr.addstr(1, 0, "Press any key to continue gifting...")
+  stdscr.refresh()
+  stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+  stdscr.getch()  # Wait for key press
+  stdscr.nodelay(True)  # Enable non-blocking mode again
+
+  # Perform the gifting action
+  inhabitant.receive_gift(selected_gift)  # You can define the logic for the inhabitant receiving the gift
+
+  # Remove the gifted item from the inventory
+  inventory.remove(selected_gift)
+
+  # Clear the screen and confirm the gift was given
+  stdscr.clear()
+  stdscr.addstr(0, 0, f"You successfully gave the {selected_gift.get_name()} to {inhabitant.get_name()}.")
+  stdscr.addstr(1, 0, "Press any key to return to the game...")
+  stdscr.refresh()
+
+  # Wait for the user to press a key to proceed
+  stdscr.nodelay(False)
+  stdscr.getch()  # Wait for key press
+  stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
+
+  return "gifted"  # Return status to indicate gift has been given
 
 def main(stdscr):
     # Setup for curses
@@ -118,6 +218,7 @@ def main(stdscr):
     pick_up_item = False
     can_move = True
     fighting_mode = False
+    gifting_mode = False
     
     while not game_over:
         
@@ -151,20 +252,39 @@ def main(stdscr):
 
       # movement check
       if not can_move:
+         # displays when exiting fight mode
          stdscr.addstr(15, 0, "You can't go that way.")
       else: 
         can_move = True
 
       # Check if game is in fight mode      
       if fighting_mode:
-          # Check if there is an inhabitant in the room before entering fight mode
-        if inhabitant:
+        # Check if there is an inhabitant in the room before entering fight mode
+        if isinstance(inhabitant, Friend):
+          stdscr.addstr(15, 0, f"{inhabitant.get_name()} doesn't want to fight with you")
+          fighting_mode = False
+          stdscr.nodelay(False)
+          stdscr.getch()  # Wait for key press
+
+        elif isinstance(inhabitant, Enemy):
             # Enter fight mode
             fight_result = fight_mode(stdscr, inventory, inhabitant)
             if fight_result == "lost":
                 game_over = True  # If the player lost, end the game
             elif fight_result == "won":
                current_room.set_character(None)               
+        else:
+            stdscr.refresh()
+            stdscr.nodelay(False)
+      
+      if gifting_mode:
+        if isinstance(inhabitant, Friend):
+          gift_mode(stdscr, inventory, inhabitant)
+        elif isinstance(inhabitant, Enemy):
+          stdscr.addstr(15, 0, f"{inhabitant.get_name()} would like to eat your brains as a gift")
+          fighting_mode = False
+          stdscr.nodelay(False)
+          stdscr.getch()  # Wait for key press
         else:
             stdscr.refresh()
             stdscr.nodelay(False)
@@ -189,11 +309,13 @@ def main(stdscr):
         # Clear the screen before showing the inventory
         stdscr.clear()  
         command = 'inventory'
+      elif key == ord('g'):
+        # Clear the screen before showing the inventory
+        stdscr.clear()  
+        command = 'gift'
       elif key == ord('q'):
         if inventory_mode:
            inventory_mode = False
-        elif fighting_mode:
-          fighting_mode = False 
         else:
            game_over = True  # Set game_over to True to exit the loop
         command = 'quit'
@@ -203,6 +325,10 @@ def main(stdscr):
       # Pick up item
       if command == 'pick up' and item:
         pick_up_item = True
+
+      # Gift mode
+      if command == 'gift'  :
+        gifting_mode = True
       
       # Open inventory
       if command == 'inventory':
