@@ -1,7 +1,8 @@
 class Item():
-  def __init__(self, item_name, item_desc):
+  def __init__(self, item_name, item_desc, item_type):
     self.name = item_name
     self.description = item_desc
+    self.type = item_type
 
   def get_name(self):
     return self.name
@@ -14,3 +15,18 @@ class Item():
   
   def set_description(self, item_description):
     self.description = item_description
+
+  def get_type(self):
+    return self.type
+
+  def set_type(self, item_type):
+    self.type = item_type
+  
+class Weapon(Item):
+  def __init__(self, item_name, item_desc):
+    super().__init__(item_name, item_desc, 'weapon')
+
+class Gift(Item):
+  def __init__(self, item_name, item_desc):
+    super().__init__(item_name, item_desc, 'gift')
+  
