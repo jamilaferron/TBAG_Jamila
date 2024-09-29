@@ -24,20 +24,86 @@ dining_hall.link_room(ballroom,"west")
 dining_hall.set_character(dave)
 dining_hall.set_item(cheese)
 
-                         
-# Assume Room and Character classes are defined elsewhere, as well as kitchen and other rooms.
 
 def display_inventory(stdscr, inventory):
-    stdscr.addstr(0, 0, "Inventory:")
-    for idx, item in enumerate(inventory):
-        #fix item description
-        stdscr.addstr(1 + idx, 0, f"- {item}")
-    stdscr.refresh()
+  stdscr.addstr(0, 0, "Your inventory contains:")
+  for idx, item in enumerate(inventory):
+      stdscr.addstr(1 + idx, 0, f"{idx}. {item.get_name()}")
+    
+  stdscr.addstr(10, 0, f"press 'q' to quit")
+  stdscr.refresh()
 
 def inventory_add_item(stdscr, inventory, item):
   inventory.append(item)  # Add the item to the inventory
-  # Flashes very quickly
-  stdscr.addstr(15, 0, f"You picked up the {item.get_name()}.")
+  stdscr.addstr(11, 0, f"You picked up the {item.get_name()}.")
+  stdscr.refresh()
+  stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+
+def fight_mode(stdscr, inventory, inhabitant):
+    count = 0  # To keep track of the selected weapon
+
+    stdscr.clear()  # Clear the screen for the fight mode interface
+    stdscr.addstr(0, 0, "Fight Mode:")
+    stdscr.addstr(1, 0, f"What will you fight {inhabitant.get_name()} with?")
+
+    # Loop to display and select weapons from inventory
+    while True:
+        stdscr.clear()
+        stdscr.addstr(0, 0, "Fight Mode:")
+        stdscr.addstr(1, 0, f"What will you fight {inhabitant.get_name()} with?")
+
+        # Display inventory options
+        for idx, item in enumerate(inventory):
+            if idx == count:
+                stdscr.addstr(3 + idx, 0, f"> {item.get_name()}")  # Highlight selected weapon
+            else:
+                stdscr.addstr(3 + idx, 0, f"  {item.get_name()}")
+
+        stdscr.addstr(len(inventory) + 5, 0, "Use UP/DOWN arrow keys to choose, ENTER to confirm.")
+
+        stdscr.refresh()  # Refresh the screen to show the changes
+        key = stdscr.getch()  # Capture user input
+
+        # Handle arrow key navigation
+        if key == curses.KEY_UP and count > 0:
+            count -= 1  # Move up in the list
+        elif key == curses.KEY_DOWN and count < len(inventory) - 1:
+            count += 1  # Move down in the list
+        elif key == curses.KEY_ENTER or key in [10, 13]:  # ENTER key (Linux: 10, Windows: 13)
+            selected_weapon = inventory[count]
+            break  # Exit the loop when the player confirms their selection
+
+    # Show the selected weapon
+    stdscr.clear()
+    stdscr.addstr(0, 0, f"You selected the {selected_weapon.get_name()} to fight {inhabitant.get_name()}.")
+    stdscr.addstr(1, 0, "Press any key to continue to the fight...")
+    stdscr.refresh()
+    stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+    stdscr.getch()  # Wait for key press
+    stdscr.nodelay(True)  # Enable non-blocking mode again
+
+    # Perform the fight
+    has_won = inhabitant.fight(selected_weapon.get_name())
+
+    # Clear the screen and show the fight result
+    stdscr.clear()
+
+    if has_won:
+        stdscr.addstr(0, 0, f"You have defeated {inhabitant.get_name()} with the {selected_weapon.get_name()}!")
+        fight_result = "won"
+    else:
+        stdscr.addstr(0, 0, f"You were defeated by {inhabitant.get_name()}... Game Over!")
+        fight_result = "lost"
+
+    stdscr.addstr(2, 0, "Press any key to return to the game...")  # Add a message for the user to continue
+    stdscr.refresh()
+
+    # Wait for the user to press a key to proceed
+    stdscr.nodelay(False)
+    stdscr.getch()  # Wait for key press
+    stdscr.nodelay(True)  # Re-enable non-blocking mode for further game play
+
+    return fight_result  # Return whether the player won or lost
 
 def main(stdscr):
     # Setup for curses
@@ -48,8 +114,10 @@ def main(stdscr):
     game_over = False
     inventory = []
     current_room = kitchen  
-    show_inventory = False
+    inventory_mode = False
     pick_up_item = False
+    can_move = True
+    fighting_mode = False
     
     while not game_over:
         
@@ -65,20 +133,44 @@ def main(stdscr):
       if item:
         stdscr.addstr(11, 0, f"You see a {item.get_name()} here.")
       
+      # Check if there is an inhabitant in the room
       inhabitant = current_room.get_character()
       if inhabitant:
         stdscr.addstr(12, 0, inhabitant.describe())
 
-      if show_inventory:
+      # Check if game is in inventory mode
+      if inventory_mode:
           stdscr.clear()
           display_inventory(stdscr, inventory)
       
+      # Check if item picked up
       if pick_up_item:
         inventory_add_item(stdscr, inventory, item) 
         current_room.set_item(None)
         pick_up_item = False
 
-      key = stdscr.getch()  # Capture keyboard input
+      # movement check
+      if not can_move:
+         stdscr.addstr(15, 0, "You can't go that way.")
+      else: 
+        can_move = True
+
+      # Check if game is in fight mode      
+      if fighting_mode:
+          # Check if there is an inhabitant in the room before entering fight mode
+        if inhabitant:
+            # Enter fight mode
+            fight_result = fight_mode(stdscr, inventory, inhabitant)
+            if fight_result == "lost":
+                game_over = True  # If the player lost, end the game
+            elif fight_result == "won":
+               current_room.set_character(None)               
+        else:
+            stdscr.refresh()
+            stdscr.nodelay(False)
+
+       # Capture keyboard input  
+      key = stdscr.getch()  
 
       # Handle user input
       if key == curses.KEY_UP:
@@ -92,60 +184,37 @@ def main(stdscr):
       elif key == ord('p'):
         command = 'pick up'
       elif key == ord('f'):
-        command = 'fight'
+        fighting_mode = True
       elif key == ord('i'):
-        stdscr.clear()  # Clear the screen before showing the inventory
-        show_inv = True
+        # Clear the screen before showing the inventory
+        stdscr.clear()  
+        command = 'inventory'
       elif key == ord('q'):
-        if show_inventory:
-           show_inventory = False
+        if inventory_mode:
+           inventory_mode = False
+        elif fighting_mode:
+          fighting_mode = False 
         else:
            game_over = True  # Set game_over to True to exit the loop
         command = 'quit'
       else:
         command = None  # No valid command
 
+      # Pick up item
       if command == 'pick up' and item:
         pick_up_item = True
       
-      # fix else block not displaying
+      # Open inventory
+      if command == 'inventory':
+         inventory_mode = True
+
+      # Move character 
       if command in ['north', 'south', 'east', 'west']:
         if command in current_room.get_linked_rooms():
+            can_move = True
             current_room = current_room.move(command)
         else:
-          stdscr.addstr(6, 0, "You can't go that way.")
-
-      # fix fighting logic
-      if command == 'fight':
-        # Handle fight logic
-        if inhabitant:
-            stdscr.addstr(18, 0, f"What will you fight {inhabitant.get_name()} with?")
-            has_won = inhabitant.fight('cheese')
-            # if has_won:
-            #     print(f"You defeated {inhabitant.get_name()}!")
-            #     current_room.set_character(None)  # Remove the character after defeating them
-            # else:
-            #     print(f"{inhabitant.get_name()} defeated you!")
-            #     game_over = True
-            # if len(inventory) > 0:
-            #     stdscr.addstr(15, 0, f"What will you fight {inhabitant.get_name()} with?")
-            #     # weapon = input(f"What will you fight {inhabitant.get_name()} with?: ").lower()
-                
-            #     # Check if the weapon is in the player's inventory
-            #     if command in [item.get_name() for item in inventory]:
-            #         has_won = inhabitant.fight(command)
-            #         if has_won:
-            #             print(f"You defeated {inhabitant.get_name()}!")
-            #             current_room.set_character(None)  # Remove the character after defeating them
-            #         else:
-            #             print(f"{inhabitant.get_name()} defeated you!")
-            #             game_over = True
-            #     else:
-            #         print(f"You don't have a {command} in your inventory.")
-            # else:
-            #     print("You have no weapon to fight with.")
-        else:
-            print("There's no enemy here.")
+          can_move = False
       
       if command == 'quit':
         stdscr.addstr(16, 0, "Quitting the game...")
