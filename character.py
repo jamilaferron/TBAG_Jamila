@@ -39,8 +39,23 @@ class Enemy(Character):
   
   def fight(self, combat_item):
     if combat_item == self.weakness:
-      print("You fend " + self.name + " off with the " + combat_item )
       return True
     else:
-      print(self.name + " crushes you, puny adventurer")
+      return False
+    
+class Friend(Character):
+  def __init__(self, char_name, char_description):
+    super().__init__(char_name, char_description)
+    self.gift = None
+
+  def set_gift(self, item_gift):
+    self.gift = item_gift
+
+  def get_gift(self):
+    return self.gift
+  
+  def accept_gift(self, gift_item):
+    if gift_item == self.gift:
+      return True
+    else:
       return False
