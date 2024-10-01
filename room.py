@@ -24,15 +24,16 @@ class Room():
   
   def link_room(self, room_to_link, direction):
     self.linked_rooms[direction] = room_to_link
+    
+    # Automatically link the opposite direction
+    opposite_directions = {
+        "north": "south",
+        "south": "north",
+        "east": "west",
+        "west": "east"
+    }
+    room_to_link.linked_rooms[opposite_directions[direction]] = self
 
-    if direction == "north":
-      room_to_link.linked_rooms["south"] = self
-    elif direction == "south":
-      room_to_link.linked_rooms["north"] = self
-    elif direction == "east":
-      room_to_link.linked_rooms["west"] = self
-    elif direction == "west":
-      room_to_link.linked_rooms["east"] = self
   
   def get_linked_rooms(self):
     return self.linked_rooms
