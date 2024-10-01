@@ -1,4 +1,20 @@
 from room import Room
+from character import Protagonist
+
+elowen = Protagonist("Elowen the Wanderer", "A curious forest elf who has a natural affinity for the flora and fauna of the land. Her main strength lies in her ability to communicate with animals and harness nature's magic for defense and healing.")
+finnian = Protagonist("Finnian the Tinkerer", "A half-gnome inventor known for his clever contraptions. Finnian is an adventurous soul who uses gadgets and wit to solve puzzles, avoid traps, and defeat enemies. He's always looking for rare materials to upgrade his inventions.")
+lyra = Protagonist("Lyra the Lightbringer", "A human with a mysterious past, destined to control the powers of light and shadow. She can manipulate light to create illusions or guide her path through dark caverns. Her true power is yet to be fully unlocked, and part of her journey is about discovering it.")
+thorn = Protagonist("Thorn the Beastmaster", "A mischievous fae with a bond to the spirit of wild creatures. Thorn has the ability to summon beasts to fight alongside him or to assist in tricky situations. He is small in stature but fierce in spirit.")
+
+elowen.set_abilities(["Nature Magic", "Stealth"])
+finnian.set_abilities(["Invention", "Mechanical Expertise"])
+lyra.set_abilities(["Light Manipulation", "Shadow Control"])
+thorn.set_abilities(["Creature Summoning", "Animal Communication"])
+
+elowen.set_weaknesses(["Corrupted Seed", "Tainted Water"])
+finnian.set_weaknesses(["Jinxed Tool ", "Rusty Invention"])
+lyra.set_weaknesses(["Cursed Amulet", "Dark Crystal"])
+thorn.set_weaknesses(["Beast Tamer's Collar", "Enchanted Whistle"])
 
 elder_grove = Room("Elder Willowroot's Grove")
 elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")

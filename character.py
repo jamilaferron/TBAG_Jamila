@@ -25,7 +25,24 @@ class Character():
     print(self.name + " doesn't want to fight with you")
     return True
 
+class Protagonist(Character):
+  def __init__(self, char_name, char_description):
+    super().__init__(char_name, char_description)
+    self.abilities = []
+    self.weaknesses = []
 
+  def set_abilities(self, abilities):
+    self.abilities.extend(abilities) 
+
+  def get_abilities(self):
+    return self.abilities
+  
+  def set_weaknesses(self, weaknesses):
+    self.weaknesses.extend(weaknesses)
+
+  def get_weaknesses(self):
+    return self.weaknesses
+    
 class Enemy(Character):
   def __init__(self, char_name, char_description):
     super().__init__(char_name, char_description)
