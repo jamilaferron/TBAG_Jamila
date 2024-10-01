@@ -2,16 +2,7 @@ from character import Enemy, Friend
 from item import Weapon, Gift
 from room import Room
 import curses
-
-kitchen = Room("kitchen")
-kitchen.set_description("A dank and dirty room buzzing with flies")
-
-ballroom = Room("ballroom")
-ballroom.set_description("A vast room with a shiny wooden floor")
-dining_hall = Room("dining hall")
-dining_hall.set_description("A large room with ornate golden decorations")
-living_room = Room("living room")
-living_room.set_description("A lived in room")
+from game_setup import *
 
 dave = Enemy("Dave", "A smelly zombie")
 dave.set_conversation("Brrlgrh... rgrhl... brains...")
@@ -27,19 +18,12 @@ cheese = Weapon("cheese", "A big block of smelly cheese")
 sword = Weapon("sword", "A silver sword")
 health_stone = Gift("stone", "A stone to restore health")
 
-kitchen.link_room(dining_hall, "south")
-kitchen.set_item(sword)
-dining_hall.link_room(ballroom,"west")
-living_room.link_room(dining_hall, "west")
-
-dining_hall.set_character(dave)
-dining_hall.set_item(health_stone)
-ballroom.set_character(jane)
-ballroom.set_item(cheese)
-living_room.set_character(bart)
-living_room.set_item(health_stone)
-
-
+whispering_meadow.set_character(dave)
+whispering_meadow.set_item(health_stone)
+hidden_fae_village.set_character(jane)
+hidden_fae_village.set_item(cheese)
+darkened_thicket.set_character(bart)
+darkened_thicket.set_item(health_stone)
 
 
 def display_inventory(stdscr, inventory):
@@ -213,7 +197,7 @@ def main(stdscr):
 
     game_over = False
     inventory = []
-    current_room = kitchen  
+    current_room = elder_grove  
     inventory_mode = False
     pick_up_item = False
     can_move = True
