@@ -1,5 +1,5 @@
 from room import Room
-from character import Enemy, Protagonist
+from character import Enemy, Friend, Protagonist
 from item import Gift, Potion, Weapon
 
 elowen = Protagonist("Elowen the Wanderer", "A curious forest elf who has a natural affinity for the flora and fauna of the land. Her main strength lies in her ability to communicate with animals and harness nature's magic for defense and healing.")
@@ -87,18 +87,40 @@ hidden_fae_village.link_room(ruins_of_temple, "north")
 blightwalker = Enemy("The Blightwalker", "A towering figure of rot and ruin, spreading decay wherever it treads. It corrupts the forests and poisons the waters, making Elowen's nature magic weaker in its presence.")
 blightwalker.set_weaknesses([{"weakness": sunstone_staff, "damage": 40}, {"weakness": flamebloom_amulet, "damage": 40}, {"weakness": shadowflare_orb, "damage": 30}])
 blightwalker.set_attack({"attack": "corrupting touch", "damage": 15})
-darkened_thicket.set_character(blightwalker)
-elder_grove.set_character(blightwalker)
+darkened_thicket.set_enemy(blightwalker)
+elder_grove.set_enemy(blightwalker)
 
 sentinel = Enemy("Ironclad Sentinels", "The Ironclad Sentinel, is a remnant of an ancient civilization, fit perfectly in the crumbling ruins of the Lost Temple, guarding its secrets.")
 sentinel.set_weaknesses([{"weakness": shock_grenade, "damage": 10}])
 sentinel.set_attack({"attack": "heavy melee strike", "damage": 12})
-ruins_of_temple.set_character(sentinel)
+ruins_of_temple.set_enemy(sentinel)
 
 saboteur = Enemy("The Blightwalker", "A sly mage who specializes in short-circuiting any mechanical or technological devices Finnian might deploy in battle.")
 saboteur.set_weaknesses([{"weakness": sunstone_staff, "damage": 15}])
 saboteur.set_attack({"attack": "magical disruption", "damage": 10})
-hidden_fae_village.set_character(saboteur)
+hidden_fae_village.set_enemy(saboteur)
+
+
+willowroot = Friend("Elder Willowroot","A wise, ancient talking tree who has deep knowledge of the forest and its history. Often gives guidance to adventurers and protects the balance of nature.")
+elder_grove.set_friend(willowroot)
+
+sylas = Friend("Sylas the Herbalist","A friendly gnome who specializes in potion-making. He provides players with herbal remedies and teaches them about the local flora, offering quests to gather rare herbs.")
+glade.set_friend(sylas)
+
+fayla = Friend("Fayla the Mischief Maker", "A playful fae who loves riddles and tricks. She offers challenges to the player and rewards them with enchanted items if they succeed in her games.")
+fairy_ring.set_friend(fayla)
+
+nymia = Friend("Nymia the Water Spirit", "A serene spirit who resides in the stream. She grants players temporary water-related abilities or offers quests to cleanse the stream of impurities.")
+moonlit_stream.set_friend(nymia)
+
+milo = Friend("Milo the Mushroom Sage", "A wise old mushroom creature who provides players with knowledge about the various fungi in the grove. He can guide players in finding rare mushrooms for crafting.")
+mushroom_grove.set_friend(milo)
+
+villager = Friend("Hidden Fae Villager","A secretive group of forest fae who live in an isolated village. They're not often seen by outsiders, but if found, they can offer magical assistance or warn of dangers in the forest.")
+hidden_fae_village.set_friend(villager)
+
+bogart = Friend("Bogart the Trickster ","A mischievous shape-shifting goblin who enjoys playing pranks on travelers. He guards some secrets of the lost temple but is not inherently evil—just tricky to deal with.")
+ruins_of_temple.set_friend(bogart)
 
 character_specific_damage = {
     "Elowen the Wanderer": 5,  # Resistant to decay

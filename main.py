@@ -174,6 +174,7 @@ def main(stdscr):
   fighting_mode = False
   # gifting_mode = False
   main_character = None
+  encounter = None
     
   while not game_over:
         
@@ -195,9 +196,12 @@ def main(stdscr):
     item = current_room.get_item()
     
     # Check if there is an inhabitant in the room
-    inhabitant = current_room.get_character()
-    if inhabitant:
-      stdscr.addstr(12, 0, inhabitant.describe())
+    # inhabitant = current_room.inhabitant
+    if encounter:
+      stdscr.addstr(12, 0, encounter)
+
+    if current_room.get_inhabitant():
+      inhabitant = current_room.get_inhabitant()
 
     # Check if game is in inventory mode
     if inventory_mode:
@@ -234,7 +238,7 @@ def main(stdscr):
           if fight_result == "lose":
               game_over = True  # If the player lost, end the game
           elif fight_result == "win":
-              current_room.set_character(None)  
+              current_room.set_inhabitant(None)  
               fighting_mode = False             
       else:
           stdscr.refresh()
@@ -298,6 +302,7 @@ def main(stdscr):
       if command in current_room.get_linked_rooms():
           can_move = True
           current_room = current_room.move(command)
+          encounter = current_room.encounter()
           
           # Generate a random item in the new room
           new_item = generate_random_item()
