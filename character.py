@@ -30,6 +30,8 @@ class Protagonist(Character):
     super().__init__(char_name, char_description)
     self.abilities = []
     self.weaknesses = []
+    self.inventory = []
+    self.hp = 100
 
   def set_abilities(self, abilities):
     self.abilities.extend(abilities) 
@@ -40,13 +42,27 @@ class Protagonist(Character):
   def set_weaknesses(self, weaknesses):
     self.weaknesses.extend(weaknesses)
 
+  def get_inventory(self):
+    return self.inventory
+  
+  def set_inventory(self, inventory):
+    self.inventory.extend(inventory)
+
   def get_weaknesses(self):
     return self.weaknesses
+  
+  def set_hp(self, new_hp):
+    self.hp = new_hp
+
+  def get_hp(self):
+    return self.hp
     
 class Enemy(Character):
   def __init__(self, char_name, char_description):
     super().__init__(char_name, char_description)
     self.weakness = None
+    self.hp = 100
+    
 
   def set_weakness(self, item_weakness):
     self.weakness = item_weakness
@@ -59,6 +75,12 @@ class Enemy(Character):
       return True
     else:
       return False
+    
+  def set_hp(self, new_hp):
+    self.hp = new_hp
+
+  def get_hp(self):
+    return self.hp
     
 class Friend(Character):
   def __init__(self, char_name, char_description):
