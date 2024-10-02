@@ -33,4 +33,8 @@ class Weapon(Item):
 class Gift(Item):
   def __init__(self, item_name, item_desc):
     super().__init__(item_name, item_desc, 'gift')
+
+class Potion(Item):
+  def __init__(self, item_name, item_desc):
+    super().__init__(item_name, item_desc, 'gift')
   

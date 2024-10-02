@@ -1,3 +1,4 @@
+import random
 from character import Enemy, Friend
 from combat import fight_mode
 from item import Weapon, Gift
@@ -54,8 +55,10 @@ def display_inventory(stdscr, inventory):
   stdscr.refresh()
 
 def inventory_add_item(stdscr, inventory, item):
+  stdscr.clear()
   inventory.append(item)  # Add the item to the inventory
-  stdscr.addstr(11, 0, f"You picked up the {item.get_name()}.")
+  stdscr.addstr(5, 0, f"You picked up the {item.get_name()}.  ")
+  stdscr.addstr(7, 0, f"Press any key to return to the game...")
   stdscr.refresh()
   stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
 
@@ -132,6 +135,30 @@ def gift_mode(stdscr, inventory, inhabitant):
 
   return "gifted"  # Return status to indicate gift has been given
 
+def generate_random_item():
+  """Randomly generate an item based on probability."""
+  chance = random.random()  # Random float between 0 and 1
+  if chance < 0.3:  # 30% chance to generate an item
+      return random.choice(possible_items)  # Return a random item from the list
+  return None  # No item generated
+
+def pick_up_item(stdscr, item, main_character):
+  stdscr.clear()  # Clear the screen for the gift mode interface
+  stdscr.addstr(0, 0, f"You see a {item.get_name()} here.")
+  stdscr.addstr(1, 0, f"---------------------------------")
+  stdscr.addstr(2, 0, f"{item.get_description()}")
+
+  stdscr.addstr(5, 0, "press 'c' to collect or 'p' to put it down")
+  stdscr.refresh()
+  stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+
+  key = stdscr.getch() 
+  if key == ord('c'):
+    inventory_add_item(stdscr, main_character.get_inventory(), item) 
+    return True
+  elif key == ord('p'):
+     return False
+
 def main(stdscr):
   # Setup for curses
   curses.curs_set(0)  # Hide the cursor
@@ -142,7 +169,7 @@ def main(stdscr):
   game_over = False
   current_room = elder_grove  
   inventory_mode = False
-  # pick_up_item = False
+  pick_up_mode = False
   can_move = True
   fighting_mode = False
   # gifting_mode = False
@@ -158,16 +185,14 @@ def main(stdscr):
       game_setup = False
 
 
-    stdscr.addstr(0, 0, "Use arrow keys to move, 'p' to pick up, 'f' to fight, 'i' to check inventory, 'q' to quit.")
-    stdscr.addstr(1, 0, "--------------------------------------------------------------------------------------------")
+    stdscr.addstr(0, 0, "Use arrow keys to move, 'f' to fight, 'i' to check inventory, 'q' to quit.")
+    stdscr.addstr(1, 0, "--------------------------------------------------------------------------")
 
     # # Display room details
     stdscr.addstr(3, 0, current_room.get_details())
 
-      # Check if there's an item in the room
+    # Check if there's an item in the room
     item = current_room.get_item()
-    if item:
-      stdscr.addstr(11, 0, f"You see a {item.get_name()} here.")
     
     # Check if there is an inhabitant in the room
     inhabitant = current_room.get_character()
@@ -179,11 +204,13 @@ def main(stdscr):
         stdscr.clear()
         display_inventory(stdscr, main_character.get_inventory())
       
-    # Check if item picked up
-    # if pick_up_item:
-    #   inventory_add_item(stdscr, main_character.get_inventory(), item) 
-    #   current_room.set_item(None)
-    #   pick_up_item = False
+    if pick_up_mode:
+      has_picked_up = pick_up_item(stdscr, item, main_character)
+      if has_picked_up:
+        current_room.set_item(None)
+        pick_up_mode = False
+      else:
+        pick_up_mode = False
 
     # movement check
     if not can_move:
@@ -258,10 +285,6 @@ def main(stdscr):
     else:
       command = None  # No valid command
 
-    # # Pick up item
-    # if command == 'pick up' and item:
-    #   pick_up_item = True
-
     # Gift mode
     # if command == 'gift':
     #   gifting_mode = True
@@ -275,8 +298,14 @@ def main(stdscr):
       if command in current_room.get_linked_rooms():
           can_move = True
           current_room = current_room.move(command)
+          
+          # Generate a random item in the new room
+          new_item = generate_random_item()
+          if new_item:
+              current_room.set_item(new_item)  # Set the item in the room
+              pick_up_mode = True
       else:
-        can_move = False
+          can_move = False
     
     if command == 'quit':
       stdscr.addstr(16, 0, "Quitting the game...")
