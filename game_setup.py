@@ -1,5 +1,5 @@
 from room import Room
-from character import Protagonist
+from character import Enemy, Protagonist
 from item import Weapon
 
 elowen = Protagonist("Elowen the Wanderer", "A curious forest elf who has a natural affinity for the flora and fauna of the land. Her main strength lies in her ability to communicate with animals and harness nature's magic for defense and healing.")
@@ -17,9 +17,6 @@ finnian.set_weaknesses(["Jinxed Tool ", "Rusty Invention"])
 lyra.set_weaknesses(["Cursed Amulet", "Dark Crystal"])
 thorn.set_weaknesses(["Beast Tamer's Collar", "Enchanted Whistle"])
 
-elder_grove = Room("Elder Willowroot's Grove")
-elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")
-
 CATEGORIES = {
     "light": "Light-based",
     "fire": "Fire-based",
@@ -34,9 +31,12 @@ flamebloom_amulet = Weapon("Flamebloom Amulet", 'A pendant adorned with a fiery 
 shock_grenade = Weapon("Shock Grenade", 'A throwable device that explodes upon impact, releasing a shockwave that stuns enemies.', 35, 'Stuns enemies in a small area for 2 turns.', 20, CATEGORIES["light"])
 shadowflare_orb = Weapon("Shadowflare Orb", 'A dark orb that can be thrown at enemies, releasing a wave of shadow energy.', 30, 'Creates a burst of shadow energy that deals damage to enemies and blinds them.', 25, CATEGORIES["shadow"])
 
-elowen.set_inventory([sunstone_staff])
+elowen.set_inventory([sunstone_staff, flamebloom_amulet, shock_grenade])
 finnian.set_inventory([shock_grenade])
 lyra.set_inventory([shadowflare_orb])
+
+elder_grove = Room("Elder Willowroot's Grove")
+elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")
 
 glade = Room("The Glade")
 glade.set_description("A peaceful clearing filled with soft grass and surrounded by tall trees.")
@@ -75,3 +75,26 @@ darkened_thicket.link_room(glimmering_stream, "east")
 glimmering_stream.link_room(whispering_meadow, "north")
 whispering_meadow.link_room(hidden_fae_village, "east")
 hidden_fae_village.link_room(ruins_of_temple, "north")
+
+blightwalker = Enemy("The Blightwalker", "A towering figure of rot and ruin, spreading decay wherever it treads. It corrupts the forests and poisons the waters, making Elowen's nature magic weaker in its presence.")
+blightwalker.set_weaknesses([{"weakness": sunstone_staff, "damage": 40}, {"weakness": flamebloom_amulet, "damage": 40}, {"weakness": shadowflare_orb, "damage": 30}])
+blightwalker.set_attack({"attack": "corrupting touch", "damage": 15})
+darkened_thicket.set_character(blightwalker)
+elder_grove.set_character(blightwalker)
+
+sentinel = Enemy("Ironclad Sentinels", "The Ironclad Sentinel, is a remnant of an ancient civilization, fit perfectly in the crumbling ruins of the Lost Temple, guarding its secrets.")
+sentinel.set_weaknesses([{"weakness": shock_grenade, "damage": 10}])
+sentinel.set_attack({"attack": "heavy melee strike", "damage": 12})
+ruins_of_temple.set_character(sentinel)
+
+saboteur = Enemy("The Blightwalker", "A sly mage who specializes in short-circuiting any mechanical or technological devices Finnian might deploy in battle.")
+saboteur.set_weaknesses([{"weakness": sunstone_staff, "damage": 15}])
+saboteur.set_attack({"attack": "magical disruption", "damage": 10})
+hidden_fae_village.set_character(saboteur)
+
+character_specific_damage = {
+    "Elowen the Wanderer": 5,  # Resistant to decay
+    "Finnian the Tinkerer": 10,  # Vulnerable to decay
+    "Lyra the Lightbringer": 12,  # Weak against decay
+    "Thorn the Beastmaster": 20  # Neutral damage (example value)
+}

@@ -41,7 +41,7 @@ class Room():
 
   def get_details(self):
     # Basic details about the room
-    string = f"\n You are in the {self.name} \n ------------------------- \n {self.description}\n"
+    string = f"You are in the {self.name}\n--------------------------------------------- \n{self.description}\n"
     
     # Include directions to linked rooms
     if self.linked_rooms:
