@@ -1,5 +1,6 @@
 from room import Room
 from character import Protagonist
+from item import Weapon
 
 elowen = Protagonist("Elowen the Wanderer", "A curious forest elf who has a natural affinity for the flora and fauna of the land. Her main strength lies in her ability to communicate with animals and harness nature's magic for defense and healing.")
 finnian = Protagonist("Finnian the Tinkerer", "A half-gnome inventor known for his clever contraptions. Finnian is an adventurous soul who uses gadgets and wit to solve puzzles, avoid traps, and defeat enemies. He's always looking for rare materials to upgrade his inventions.")
@@ -18,6 +19,24 @@ thorn.set_weaknesses(["Beast Tamer's Collar", "Enchanted Whistle"])
 
 elder_grove = Room("Elder Willowroot's Grove")
 elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")
+
+CATEGORIES = {
+    "light": "Light-based",
+    "fire": "Fire-based",
+    "physical": "Physical",
+    "magical": "Magical",
+    "electrical": "Electrical",
+    "shadow": "Shadow-based"
+}
+
+sunstone_staff = Weapon('Sunstone Staff', 'A staff made from a sunstone, glowing with radiant light. It can channel healing energy and repel dark forces.', 25, "heals allies for 10 HP per hit", 75, CATEGORIES["light"] )
+flamebloom_amulet = Weapon("Flamebloom Amulet", 'A pendant adorned with a fiery red flower, granting Elowen the power to control flames.', 25, 'Creates a fiery aura around Elowen, dealing 5 damage to nearby enemies', 50 ,CATEGORIES["fire"])
+shock_grenade = Weapon("Shock Grenade", 'A throwable device that explodes upon impact, releasing a shockwave that stuns enemies.', 35, 'Stuns enemies in a small area for 2 turns.', 20, CATEGORIES["light"])
+shadowflare_orb = Weapon("Shadowflare Orb", 'A dark orb that can be thrown at enemies, releasing a wave of shadow energy.', 30, 'Creates a burst of shadow energy that deals damage to enemies and blinds them.', 25, CATEGORIES["shadow"])
+
+elowen.set_inventory([sunstone_staff])
+finnian.set_inventory([shock_grenade])
+lyra.set_inventory([shadowflare_orb])
 
 glade = Room("The Glade")
 glade.set_description("A peaceful clearing filled with soft grass and surrounded by tall trees.")

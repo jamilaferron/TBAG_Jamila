@@ -23,8 +23,12 @@ class Item():
     self.type = item_type
   
 class Weapon(Item):
-  def __init__(self, item_name, item_desc):
+  def __init__(self, item_name, item_desc, damage, effect, durability, category):
     super().__init__(item_name, item_desc, 'weapon')
+    self.damage = damage
+    self.effect = effect
+    self.durability = durability
+    self.category = category
 
 class Gift(Item):
   def __init__(self, item_name, item_desc):

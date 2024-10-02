@@ -14,16 +14,12 @@ bart.set_weakness("cheese")
 
 jane = Friend("Jane", "A fellow zombie slayer")
 
-cheese = Weapon("cheese", "A big block of smelly cheese")
-sword = Weapon("sword", "A silver sword")
-health_stone = Gift("stone", "A stone to restore health")
-
 whispering_meadow.set_character(dave)
-whispering_meadow.set_item(health_stone)
+whispering_meadow.set_item(flamebloom_amulet)
 hidden_fae_village.set_character(jane)
-hidden_fae_village.set_item(cheese)
+hidden_fae_village.set_item(flamebloom_amulet)
 darkened_thicket.set_character(bart)
-darkened_thicket.set_item(health_stone)
+darkened_thicket.set_item(flamebloom_amulet)
 
 def main_character_select(stdscr, characters):
   count = 0  # To keep track of the selected weapon
@@ -236,7 +232,6 @@ def main(stdscr):
 
   game_setup = True
   game_over = False
-  inventory = []
   current_room = elder_grove  
   inventory_mode = False
   pick_up_item = False
@@ -272,11 +267,11 @@ def main(stdscr):
     # Check if game is in inventory mode
     if inventory_mode:
         stdscr.clear()
-        display_inventory(stdscr, inventory)
+        display_inventory(stdscr, main_character.get_inventory())
       
     # Check if item picked up
     if pick_up_item:
-      inventory_add_item(stdscr, inventory, item) 
+      inventory_add_item(stdscr, main_character.get_inventory(), item) 
       current_room.set_item(None)
       pick_up_item = False
 
@@ -298,7 +293,7 @@ def main(stdscr):
 
       elif isinstance(inhabitant, Enemy):
           # Enter fight mode
-          fight_result = fight_mode(stdscr, inventory, inhabitant)
+          fight_result = fight_mode(stdscr, main_character.get_inventory(), inhabitant)
           if fight_result == "lost":
               game_over = True  # If the player lost, end the game
           elif fight_result == "won":
@@ -309,7 +304,7 @@ def main(stdscr):
     
     if gifting_mode:
       if isinstance(inhabitant, Friend):
-        gift_mode(stdscr, inventory, inhabitant)
+        gift_mode(stdscr, main_character.get_inventory(), inhabitant)
       elif isinstance(inhabitant, Enemy):
         stdscr.addstr(15, 0, f"{inhabitant.get_name()} would like to eat your brains as a gift")
         fighting_mode = False
