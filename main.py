@@ -1,10 +1,7 @@
-import random
-from character import Enemy, Friend
-from combat import fight_mode
-from item import Weapon, Gift
-from room import Room
 import curses
+import random
 from game_setup import *
+from combat import fight_mode
 
 def main_character_select(stdscr, characters):
   count = 0  # To keep track of the selected weapon
@@ -61,6 +58,30 @@ def inventory_add_item(stdscr, inventory, item):
   stdscr.addstr(7, 0, f"Press any key to return to the game...")
   stdscr.refresh()
   stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+
+def generate_random_item():
+  """Randomly generate an item based on probability."""
+  chance = random.random()  # Random float between 0 and 1
+  if chance < 0.2:  # 30% chance to generate an item
+      return random.choice(possible_items)  # Return a random item from the list
+  return None  # No item generated
+
+def pick_up_item(stdscr, item, main_character):
+  stdscr.clear()  # Clear the screen for the gift mode interface
+  stdscr.addstr(0, 0, f"You see a {item.get_name()} here.")
+  stdscr.addstr(1, 0, f"---------------------------------")
+  stdscr.addstr(2, 0, f"{item.get_description()}")
+
+  stdscr.addstr(5, 0, "press 'c' to collect or 'p' to put it down")
+  stdscr.refresh()
+  stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+
+  key = stdscr.getch() 
+  if key == ord('c'):
+    inventory_add_item(stdscr, main_character.get_inventory(), item) 
+    return True
+  elif key == ord('p'):
+     return False
 
 def gift_mode(stdscr, inventory, inhabitant):
   count = 0  # To keep track of the selected gift
@@ -135,29 +156,48 @@ def gift_mode(stdscr, inventory, inhabitant):
 
   return "gifted"  # Return status to indicate gift has been given
 
-def generate_random_item():
+def generate_random_inhabitant(possible_inhabitants):
   """Randomly generate an item based on probability."""
   chance = random.random()  # Random float between 0 and 1
-  if chance < 0.3:  # 30% chance to generate an item
-      return random.choice(possible_items)  # Return a random item from the list
+  if chance < 0.5:  # 30% chance to generate an inhabitant
+      return random.choice(possible_inhabitants)
   return None  # No item generated
+  
+def encounter(stdscr, main_character, current_room):
+    stdscr.clear()  # Clear the screen for the gift mode interface
+   
+    stdscr.addstr(1, 0, "--------------------------------------------------------------------------")
+    stdscr.addstr(3, 0, f"You are in the {current_room.get_name()}\n--------------------------------------------- \n{current_room.get_description()}\n")
 
-def pick_up_item(stdscr, item, main_character):
-  stdscr.clear()  # Clear the screen for the gift mode interface
-  stdscr.addstr(0, 0, f"You see a {item.get_name()} here.")
-  stdscr.addstr(1, 0, f"---------------------------------")
-  stdscr.addstr(2, 0, f"{item.get_description()}")
+    inhabitant = current_room.get_inhabitant()
+   
+    if isinstance(inhabitant, Friend):          
+        stdscr.addstr(0, 0, "Press 'g' to gift, or 'q' to move along.")
+        stdscr.addstr(12, 0, f"You encountered {inhabitant.get_name()}, a friendly face!")
+    elif isinstance(inhabitant, Enemy):
+        stdscr.addstr(0, 0, "Press 'f' to fight or 'q' to attempt to flee.")
+        stdscr.addstr(12, 0, f"A wild {inhabitant.get_name()} appears! Prepare for battle!")
 
-  stdscr.addstr(5, 0, "press 'c' to collect or 'p' to put it down")
-  stdscr.refresh()
-  stdscr.nodelay(False)  # Disable non-blocking mode to wait for key press
+    key = stdscr.getch() 
+    if key == ord('g') and isinstance(inhabitant, Friend):
+        gift_mode(stdscr, main_character.get_inventory(), inhabitant) 
+        return True
+    elif key == ord('f') and isinstance(inhabitant, Enemy):
+        fight_result = fight_mode(stdscr, main_character, inhabitant, character_specific_damage)
 
-  key = stdscr.getch() 
-  if key == ord('c'):
-    inventory_add_item(stdscr, main_character.get_inventory(), item) 
-    return True
-  elif key == ord('p'):
-     return False
+        # If the fight is won, remove the enemy from the room
+        if fight_result == "win":
+            stdscr.addstr(14, 0, f"You defeated {inhabitant.get_name()}!")
+            current_room.set_inhabitant(None)  # Remove the enemy from the room
+            stdscr.addstr(15, 0, "Press any key to continue...")
+            stdscr.refresh()
+            stdscr.nodelay(False)
+            stdscr.getch()  # Wait for key press
+        return fight_result
+    else:
+        return None  # No interaction occurred
+
+
 
 def main(stdscr):
   # Setup for curses
@@ -165,98 +205,57 @@ def main(stdscr):
   stdscr.nodelay(5)   # Make getch() non-blocking
   stdscr.timeout(100) # Refresh screen every 100ms
 
-  game_setup = True
-  game_over = False
-  current_room = elder_grove  
+# Game modes
+  game_setup_mode = True
   inventory_mode = False
   pick_up_mode = False
-  can_move = True
-  fighting_mode = False
-  # gifting_mode = False
+  encounter_mode = False
+
+  game_over = False
   main_character = None
-  encounter = None
-    
+  current_room = elder_grove
+  can_move = True
+
   while not game_over:
         
     stdscr.clear()  # Clear the screen
     stdscr.refresh()  # Refresh the screen to show changes
 
-    while game_setup:
+    while game_setup_mode:
       main_character = main_character_select(stdscr, [elowen, finnian, lyra, thorn])
-      game_setup = False
-
-
-    stdscr.addstr(0, 0, "Use arrow keys to move, 'f' to fight, 'i' to check inventory, 'q' to quit.")
+      game_setup_mode = False
+    
+    stdscr.addstr(0, 0, "Use arrow keys to move, 'i' to check inventory, 'q' to quit.")
     stdscr.addstr(1, 0, "--------------------------------------------------------------------------")
 
     # # Display room details
     stdscr.addstr(3, 0, current_room.get_details())
 
-    # Check if there's an item in the room
-    item = current_room.get_item()
-    
-    # Check if there is an inhabitant in the room
-    # inhabitant = current_room.inhabitant
-    if encounter:
-      stdscr.addstr(12, 0, encounter)
-
-    if current_room.get_inhabitant():
-      inhabitant = current_room.get_inhabitant()
-
     # Check if game is in inventory mode
     if inventory_mode:
         stdscr.clear()
         display_inventory(stdscr, main_character.get_inventory())
-      
+    
     if pick_up_mode:
-      has_picked_up = pick_up_item(stdscr, item, main_character)
+      has_picked_up = pick_up_item(stdscr, current_room.get_item(), main_character)
       if has_picked_up:
         current_room.set_item(None)
         pick_up_mode = False
       else:
         pick_up_mode = False
-
-    # movement check
+    
+    if encounter_mode:
+        result = encounter(stdscr, main_character, current_room)
+        if result == "won" or result == "fled":
+            encounter_mode = False  # Exit encounter mode if the fight is over or the player flees
+    
+     # movement check
     if not can_move:
         # displays when exiting fight mode
         stdscr.addstr(15, 0, "You can't go that way.")
     else: 
       can_move = True
 
-    # Check if game is in fight mode      
-    if fighting_mode:
-      # Check if there is an inhabitant in the room before entering fight mode
-      if isinstance(inhabitant, Friend):
-        stdscr.addstr(15, 0, f"{inhabitant.get_name()} doesn't want to fight with you")
-        fighting_mode = False
-        stdscr.nodelay(False)
-        stdscr.getch()  # Wait for key press
-
-      elif isinstance(inhabitant, Enemy):
-          # Enter fight mode
-          fight_result = fight_mode(stdscr, main_character, inhabitant, character_specific_damage)
-          if fight_result == "lose":
-              game_over = True  # If the player lost, end the game
-          elif fight_result == "win":
-              current_room.set_inhabitant(None)  
-              fighting_mode = False             
-      else:
-          stdscr.refresh()
-          stdscr.nodelay(False)
-    
-    # if gifting_mode:
-    #   if isinstance(inhabitant, Friend):
-    #     gift_mode(stdscr, main_character.get_inventory(), inhabitant)
-    #   elif isinstance(inhabitant, Enemy):
-    #     stdscr.addstr(15, 0, f"{inhabitant.get_name()} would like to eat your brains as a gift")
-    #     fighting_mode = False
-    #     stdscr.nodelay(False)
-    #     stdscr.getch()  # Wait for key press
-    #   else:
-    #       stdscr.refresh()
-    #       stdscr.nodelay(False)
-
-      # Capture keyboard input  
     key = stdscr.getch()  
 
     # Handle user input
@@ -268,54 +267,45 @@ def main(stdscr):
       command = 'west'
     elif key == curses.KEY_RIGHT:
       command = 'east'
-    elif key == ord('p'):
-      command = 'pick up'
-    elif key == ord('f'):
-      fighting_mode = True
     elif key == ord('i'):
       # Clear the screen before showing the inventory
       stdscr.clear()  
-      command = 'inventory'
+      inventory_mode = True
+    elif key == ord('q'):
+        if inventory_mode:
+            inventory_mode = False
+        elif encounter_mode:
+            encounter_mode = False
+        else:
+            game_over = True  # Set game_over to True to exit the loop
+    elif key == ord('f'):
+      fighting_mode = True
     elif key == ord('g'):
       # Clear the screen before showing the inventory
       stdscr.clear()  
       command = 'gift'
-    elif key == ord('q'):
-      if inventory_mode:
-          inventory_mode = False
-      else:
-          game_over = True  # Set game_over to True to exit the loop
-      command = 'quit'
+    
     else:
       command = None  # No valid command
-
-    # Gift mode
-    # if command == 'gift':
-    #   gifting_mode = True
     
-    # # Open inventory
-    if command == 'inventory':
-        inventory_mode = True
-
-    # Move character 
     if command in ['north', 'south', 'east', 'west']:
-      if command in current_room.get_linked_rooms():
-          can_move = True
-          current_room = current_room.move(command)
-          encounter = current_room.encounter()
-          
-          # Generate a random item in the new room
-          new_item = generate_random_item()
-          if new_item:
-              current_room.set_item(new_item)  # Set the item in the room
-              pick_up_mode = True
-      else:
-          can_move = False
-    
-    if command == 'quit':
-      stdscr.addstr(16, 0, "Quitting the game...")
+        if command in current_room.get_linked_rooms():
+            can_move = True
+            current_room = current_room.move(command)
 
-  stdscr.refresh()  # Refresh after processing commands
+            # Generate a random item in the new room
+            new_item = generate_random_item()
+            if new_item:
+                current_room.set_item(new_item)  # Set the item in the room
+                pick_up_mode = True
+            
+            new_inhabitant = generate_random_inhabitant([current_room.get_enemy(), current_room.get_friend()])
+            if new_inhabitant:
+               current_room.set_inhabitant(new_inhabitant)
+               encounter_mode = True
+        else:
+            can_move = False
+
 
 # Run the game
 if __name__ == "__main__":

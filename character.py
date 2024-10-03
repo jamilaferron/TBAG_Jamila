@@ -31,7 +31,7 @@ class Protagonist(Character):
     self.abilities = []
     self.weaknesses = []
     self.inventory = []
-    self.health = 100
+    self.health = 50
 
   def set_abilities(self, abilities):
     self.abilities.extend(abilities) 
@@ -68,7 +68,7 @@ class Enemy(Character):
     super().__init__(char_name, char_description)
     self.weaknesses = []
     self.attack = None
-    self.health = 100
+    self.health = 50
     
 
   def set_weaknesses(self, weaknesses):

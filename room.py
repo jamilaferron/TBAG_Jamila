@@ -1,6 +1,5 @@
 import random
 
-
 class Room():
   def __init__(self, room_name):
     self.name = room_name
@@ -71,7 +70,7 @@ class Room():
     return self.enemy
   
   def set_friend(self, new_friend):
-    self.character = new_friend
+    self.friend = new_friend
 
   def get_friend(self):
     return self.friend
@@ -88,22 +87,3 @@ class Room():
 
   def get_item(self):
     return self.item
-
-  def encounter(self):
-    # Randomly decide whether to encounter a friend, enemy, or nothing
-    encounter_chance = random.choice([True, False])  # 50% chance for a friend or enemy
-    
-    if encounter_chance:
-        # Randomly choose between friend and enemy
-        if random.choice([True, False]):  # 50% chance to choose friend or enemy
-            if self.friend:
-                self.inhabitant = self.friend  # Set the inhabitant to a friend
-                return(f"You encountered {self.inhabitant.name}!")
-                # Additional interaction logic here
-        else:
-            if self.enemy:
-                self.inhabitant = self.enemy  # Set the inhabitant to an enemy
-                return(f"Beware! You encountered {self.inhabitant.name}!")
-                # Additional combat logic here
-    else:
-        return("The room is empty, but you feel a sense of calm.")
