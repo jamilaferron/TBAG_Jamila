@@ -81,7 +81,7 @@ def fight_mode(stdscr, character, enemy, character_specific_damage):
             stdscr.addstr(2, 0, f"{enemy.name} has been defeated!\n")
             stdscr.refresh()
             stdscr.getch()  # Wait for user input to exit
-            return "win"  # Return "win" if the enemy is defeated
+            return "won"  # Return "win" if the enemy is defeated
 
         # Enemy attacks the character
         stdscr.addstr(3, 0, f"{enemy.name} attacks {character.name}!\n")
@@ -95,7 +95,7 @@ def fight_mode(stdscr, character, enemy, character_specific_damage):
             stdscr.addstr(7, 0, f"GAME OVER...")
             stdscr.refresh()
             stdscr.getch()  # Wait for user input to exit
-            return "lose"  # Return "lose" if the character is defeated
+            return "lost"  # Return "lose" if the character is defeated
 
         stdscr.addstr(6, 0, "Press any key to continue the fight...\n")
         stdscr.refresh()

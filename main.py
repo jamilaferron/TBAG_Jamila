@@ -186,7 +186,7 @@ def encounter(stdscr, main_character, current_room):
         fight_result = fight_mode(stdscr, main_character, inhabitant, character_specific_damage)
 
         # If the fight is won, remove the enemy from the room
-        if fight_result == "win":
+        if fight_result == "won":
             stdscr.addstr(14, 0, f"You defeated {inhabitant.get_name()}!")
             current_room.set_inhabitant(None)  # Remove the enemy from the room
             stdscr.addstr(15, 0, "Press any key to continue...")
@@ -247,7 +247,9 @@ def main(stdscr):
     if encounter_mode:
         result = encounter(stdscr, main_character, current_room)
         if result == "won" or result == "fled":
-            encounter_mode = False  # Exit encounter mode if the fight is over or the player flees
+          encounter_mode = False  # Exit encounter mode if the fight is over or the player flees
+        elif result == "lost":
+          game_over = True
     
      # movement check
     if not can_move:
