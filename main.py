@@ -84,20 +84,19 @@ def pick_up_item(stdscr, item, main_character):
      return False
 
 def gift_mode(stdscr, inventory, inhabitant):
+  stdscr.clear()
   count = 0  # To keep track of the selected gift
   gifts = [item for item in inventory if isinstance(item, Gift)]  # Filter only gift items
-  
+  stdscr.addstr(0, 0, "Gift Mode:")
   if not gifts:  # Check if there are no gifts available
-    stdscr.addstr(0, 0, f"There are no gifts available to give to {inhabitant.get_name()}!")
-    stdscr.addstr(1, 0, "Press any key to return to the game...")
+    stdscr.addstr(1, 0, f"There are no gifts available to give to {inhabitant.get_name()}!")
+    stdscr.addstr(2, 0, "Press any key to return to the game...")
     stdscr.refresh()
     stdscr.nodelay(False)
     stdscr.getch()  # Wait for key press
-    stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
     return "no_gifts"  # Return a status indicating no gifts available
   
   stdscr.clear()  # Clear the screen for the gift mode interface
-  stdscr.addstr(0, 0, "Gift Mode:")
   stdscr.addstr(1, 0, f"What will you gift to {inhabitant.get_name()}?")
 
   # Loop to display and select gifts from inventory
@@ -137,9 +136,6 @@ def gift_mode(stdscr, inventory, inhabitant):
   stdscr.getch()  # Wait for key press
   stdscr.nodelay(True)  # Enable non-blocking mode again
 
-  # Perform the gifting action
-  inhabitant.receive_gift(selected_gift)  # You can define the logic for the inhabitant receiving the gift
-
   # Remove the gifted item from the inventory
   inventory.remove(selected_gift)
 
@@ -152,7 +148,6 @@ def gift_mode(stdscr, inventory, inhabitant):
   # Wait for the user to press a key to proceed
   stdscr.nodelay(False)
   stdscr.getch()  # Wait for key press
-  stdscr.nodelay(True)  # Re-enable non-blocking mode for further gameplay
 
   return "gifted"  # Return status to indicate gift has been given
 
@@ -180,8 +175,8 @@ def encounter(stdscr, main_character, current_room):
 
     key = stdscr.getch() 
     if key == ord('g') and isinstance(inhabitant, Friend):
-        gift_mode(stdscr, main_character.get_inventory(), inhabitant) 
-        return True
+        gift_result = gift_mode(stdscr, main_character.get_inventory(), inhabitant) 
+        return gift_result
     elif key == ord('f') and isinstance(inhabitant, Enemy):
         fight_result = fight_mode(stdscr, main_character, inhabitant, character_specific_damage)
 
@@ -246,17 +241,18 @@ def main(stdscr):
     
     if encounter_mode:
         result = encounter(stdscr, main_character, current_room)
-        if result == "won" or result == "fled":
+        if result == "won" or result == "fled" or result == "no_gifts" or result == "gifted" or result == "quit":
           encounter_mode = False  # Exit encounter mode if the fight is over or the player flees
         elif result == "lost":
           game_over = True
-    
+          
      # movement check
     if not can_move:
         # displays when exiting fight mode
         stdscr.addstr(15, 0, "You can't go that way.")
     else: 
       can_move = True
+
 
     key = stdscr.getch()  
 

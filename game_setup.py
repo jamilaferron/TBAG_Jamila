@@ -38,6 +38,8 @@ possible_items = [
     Potion("Lesser Healing Potion", "Healing Potion"),
     Potion("Mana Elixir", "Mana elixer"),
     Gift("Mystic Feather", "feather"),
+    Gift("Mystic Charm", "charm"),
+    Gift("Mystic Stone", "stone"),
 ]
 
 elowen.set_inventory([sunstone_staff, flamebloom_amulet, shock_grenade])
