@@ -1,5 +1,5 @@
 # Text-Based Adventure Game
-Overview
+## Overview
 Welcome to the Text-Based Adventure Game! In this game, you will explore various rooms, interact with characters, collect items, and engage in battles against enemies. Your choices will shape the outcome of your adventure. Can you survive the challenges and uncover the secrets of the mysterious world?
 
 Getting Started
