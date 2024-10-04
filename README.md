@@ -2,18 +2,17 @@
 ## Overview
 Welcome to the Text-Based Adventure Game! In this game, you will explore various rooms, interact with characters, collect items, and engage in battles against enemies. Your choices will shape the outcome of your adventure. Can you survive the challenges and uncover the secrets of the mysterious world?
 
-Getting Started
+## Getting Started
 To play the game, follow these steps:
 
-Start the Game: Launch the game in your preferred Python environment.
+1. Start the Game: Launch the game in your preferred Python environment.
 
-Navigation: Move between rooms using the directional commands:
-
-north or n: Move to the room in the northern direction.
-south or s: Move to the room in the southern direction.
-east or e: Move to the room in the eastern direction.
-west or w: Move to the room in the western direction.
-Explore Rooms: Each room contains descriptions, items, and possibly enemies. Pay attention to what you find.
+2. Navigation: Move between rooms using the directional commands:
+  - `north` or `n`: Move to the room in the northern direction.
+  - `south` or `s`: Move to the room in the southern direction.
+  - east or e: Move to the room in the eastern direction.
+  - west or w: Move to the room in the western direction.
+  - Explore Rooms: Each room contains descriptions, items, and possibly enemies. Pay attention to what you find.
 
 Interact with Items:
 
