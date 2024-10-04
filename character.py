@@ -7,6 +7,12 @@ class Character():
   def get_name(self):
     return self.name
   
+  def get_description(self):
+    return self.description
+  
+  def set_description(self, new_description):
+    self.description = new_description
+
   def describe(self):
     print(f"{self.name} is in this room!")
     print( self.description)
@@ -45,7 +51,7 @@ class Enemy(Character):
     self.treasure = treasure
   
   def fight(self, combat_item):
-    if combat_item == self.weakness:
+    if combat_item == self.weakness.get_name():
       print("You fend " + self.name + " off with the " + combat_item )
       return True
     else:
