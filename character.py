@@ -65,3 +65,23 @@ class Enemy(Character):
     else: 
       print(f"{self.name} has no treasure to steal" )
       return False
+    
+class Friend(Character):
+  def __init__(self, char_name, char_description):
+    super().__init__(char_name, char_description)
+    self.token = None
+
+  def set_token(self, item_token):
+    self.token = item_token
+
+  def get_token(self):
+    return self.token
+  
+  def gift(self, gifted_item):
+    if gifted_item == self.token.get_name():
+      print(f"I am honored by your generosity. This {gifted_item} will help me greatly!")
+      return True
+    else:
+      print(f"You are generous, but I must decline. There are others who need a {gifted_item} more.")
+      return False
+  

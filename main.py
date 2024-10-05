@@ -1,80 +1,96 @@
-from character import Enemy
+from character import Enemy, Friend
 from item import Item, Weapon
 from room import Room
 from door import generate_locked_door
-
-import time
-import sys
-
-def print_sequence( symbol_sequence, message):
-    for _ in range(1):  # Loop through the sequence multiple times
-        for symbol in symbol_sequence:
-            sys.stdout.write(f"\r{symbol} {message} {symbol}  ")  # Overwrites the current line
-            sys.stdout.flush()  # Ensure the output is written immediately
-            time.sleep(0.2)  # Pause between prints
-
-def print_enemy(inhabitant):
-    print_sequence(["👹", " ", "👹", " ", "👹"], f"{inhabitant}is in this room!")
-
-def print_item(item):
-    print_sequence(["✨", " ", "✨", " ", "✨"], f"You see a {item} here.")
 
 def inventory_remove_item(inventory, item_name):
     for item in inventory:
         if item.name == item_name:
             inventory.remove(item)
-            print(f"Removed: {item.name}")
             break  # Exit the loop after removing the item
     else:
         print(f"Item '{item_name}' not found in inventory.")
 
-
-
-kitchen = Room("kitchen")
-kitchen.set_description("A dank and dirty room buzzing with flies")
-ballroom = Room("ballroom")
-ballroom.set_description("A vast room with a shiny wooden floor")
-dining_hall = Room("dining hall")
-dining_hall.set_description("A large room with ornate golden decorations")
-study = Room("study")
-study.set_description("A dark dusty room with large shelves")
-
+# Weapons
 sunstone_staff = Weapon("sunstone staff", "A staff made from a sunstone, glowing with radiant light. It can channel healing energy and repel dark forces.")
 shock_grenade = Weapon("shock grenade", "A throwable device that explodes upon impact, releasing a shockwave that stuns enemies.")
 sword = Weapon("sword", "A silver sword")
+
+# Items
 key = Item("key", "Locked door key")
 ring = Item("ring", "A Shiny gold ring")
 talisman = Item("Talisman of Purity ", "A relic imbued with cleansing magic, used to purge areas corrupted by blight or to heal companions afflicted by the Blightwalker's touch.")
 golems_heart = Item("Golem’s Heart", "A rare artifact that can be used to temporarily summon an Ironclad Sentinel to fight by the player's side for a short period.")
+bark_amulet = Item("Sacred Bark Amulet", "An enchanted relic made from the bark of a once-mighty tree, symbolizing the protection and longevity of the forest.")
+astral_map = Item("Astral Map", "A detailed chart of the constellations, showing hidden stars and paths unknown to most mortals, enhancing her ability to navigate the night.")
 
+# Friendly characters
+willowroot = Friend("Elder Willowroot","A wise, ancient talking tree who has deep knowledge of the forest and its history. Often gives guidance to adventurers and protects the balance of nature.")
+willowroot.set_conversation("The Thicket is twisted with dark roots. Fire will clear the way, but only light can banish what lurks within.")
+willowroot.set_token(bark_amulet)
+
+luna = Friend("Luna the Night Sage", "A mysterious figure draped in dark robes, adorned with shimmering stars. She appears at night and offers cryptic prophecies, granting temporary night vision or revealing hidden paths.")
+luna.set_conversation("Under the pale moonlight, shadows cast long but light reveals the way.")
+luna.set_token(astral_map)
+
+# Enemy Characters
 blightwalker = Enemy("The Blightwalker", "A towering figure of rot and ruin, spreading decay wherever it treads. It corrupts the forests and poisons the waters, making Elowen's nature magic weaker in its presence.")
 blightwalker.set_conversation("Watch as life withers in my wake… nothing can escape decay.")
 blightwalker.set_weakness(sunstone_staff)
+blightwalker.set_treasure(talisman)
 
 sentinel = Enemy("Ironclad Sentinel", "The Ironclad Sentinel, is a remnant of an ancient civilization, fit perfectly in the crumbling ruins of the Lost Temple, guarding its secrets.")
 sentinel.set_conversation("Your weapons are like whispers against steel!")
-sentinel.set_weakness(sunstone_staff)
-
-
-
-kitchen.link_room(dining_hall, "south")
-kitchen.set_item(sunstone_staff)
-dining_hall.link_room(ballroom,"west")
-dining_hall.link_room(study, "east")
-
-dining_hall.set_character(blightwalker)
-study.set_character(sentinel)
-dining_hall.set_item(shock_grenade)
-ballroom.set_item(sword)
-study.set_item(key)
-blightwalker.set_treasure(talisman)
+sentinel.set_weakness(shock_grenade)
 sentinel.set_treasure(golems_heart)
-                         
-current_room = kitchen
+
+# Set up Rooms
+elder_grove = Room("Elder Willowroot's Grove")
+elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")
+elder_grove.set_character(willowroot)
+
+glade = Room("The Glade")
+glade.set_description("A peaceful clearing filled with soft grass and surrounded by tall trees.")
+glade.set_item(bark_amulet)
+
+mushroom_grove = Room("Mushroom Grove")
+mushroom_grove.set_description("A grove filled with vibrant, oversized mushrooms of all colors.")
+mushroom_grove.set_item(sunstone_staff)
+
+darkened_thicket = Room("Darkened Thicket")
+darkened_thicket.set_description("A shadowy part of the forest where the light struggles to penetrate, home to mysterious creatures.")
+darkened_thicket.set_character(blightwalker)
+darkened_thicket.set_item(key)
+
+whispering_meadow = Room("Whispering Meadow")
+whispering_meadow.set_description("A serene meadow where the whispers of the wind carry secrets of the forest.")
+whispering_meadow.set_character(luna)
+
+glimmering_stream = Room("Glimmering Stream")
+glimmering_stream.set_description("A sparkling stream filled with crystal-clear water, where small fish dart playfully.")
+glimmering_stream.set_item(shock_grenade)
+
+hidden_fae_village = Room("Hidden Fae Village")
+hidden_fae_village.set_description("A magical village concealed by illusion, where the fae gather and share their wisdom.")
+hidden_fae_village.set_item(astral_map)
+
+ruins_of_temple = Room("Ruins of the Lost Temple")
+ruins_of_temple.set_description("Ancient, crumbling structures that hint at a time when magic was worshiped.")
+ruins_of_temple.set_character(sentinel)
+
+# Link Rooms
+elder_grove.link_room(glade, "south")
+glade.link_room(mushroom_grove, "east") 
+mushroom_grove.link_room(darkened_thicket, "south")
+mushroom_grove.link_room(whispering_meadow, "east")
+darkened_thicket.link_room(glimmering_stream, "east")
+glimmering_stream.link_room(whispering_meadow, "north")
+whispering_meadow.link_room(hidden_fae_village, "east")
+hidden_fae_village.link_room(ruins_of_temple, "north")
 
 game_over = False
 inventory = []
-current_room = kitchen
+current_room = elder_grove
 
 # Game loop
 while not game_over:
@@ -84,33 +100,32 @@ while not game_over:
 
     # Check if there's a character in the room
     inhabitant = current_room.get_character()
-    if inhabitant is not None:
+    if inhabitant is not None and isinstance(inhabitant, Enemy):
         actions.extend(["[t]alk", "[f]ight", "[r]ob"])
-        print_enemy(inhabitant.get_name())
-        print(f"\n{inhabitant.get_description()}")
+        inhabitant.describe()
+    elif inhabitant is not None and isinstance(inhabitant, Friend):
+        actions.extend(["[t]alk", "[g]ift"])
+        inhabitant.describe()
 
     # Check if there's an item in the room
     item = current_room.get_item()
     if item:
         actions.append(f"[p]ick up {item.get_name()}")
-        print_item(item.get_name())
+        print(f"You see a {item.get_name()} here.")
         
-
   # Get player input
     print("\n---------------------------------------")
     print("\nWhat action would you like to do?\n")
     action_list = ""
     for i, action in enumerate(actions):
-        action_list += f"{action}                    "
-    print(f"{action_list}\n")
+        print(action)
     command = input(">").lower()
   
      # Allow moving with n, e, s, w commands
     direction_map = {'n': 'north', 'e': 'east', 's': 'south', 'w': 'west'}
     command = direction_map.get(command, command)  
           
-
-    if command in ['north', 'south', 'east', 'west']:
+    if command in ["north", "south", "east", "west"]:
         # Move to another room if possible
         linked_rooms = current_room.get_linked_rooms()
         if command in linked_rooms:
@@ -131,11 +146,11 @@ while not game_over:
             else:
                 print("You can't go that way.")
 
-    elif command == "talk" or command == 't':
+    elif command in ["talk", "t"]:
         if inhabitant:
             inhabitant.talk()
 
-    elif command == "rob" or command == 'r':
+    elif command in ["rob", "r"]:
         if inhabitant:
             has_stolen = inhabitant.steal_from()
             if has_stolen:
@@ -143,7 +158,7 @@ while not game_over:
                 inventory.append(treasure)
                 inhabitant.set_treasure(None)
 
-    elif command.startswith('pick up') or command == 'p':
+    elif command.startswith("pick up") or command == "p":
         # Attempt to pick up the item in the room
         if item:
             if command == 'p':
@@ -158,7 +173,7 @@ while not game_over:
         else:
             print("There is no such item here.")
 
-    elif command == 'inventory' or command == 'i':
+    elif command in ["inventory", "i"]:
         print("Inventory")
         print("_____________________")
         for idx, item in enumerate(inventory):
@@ -166,10 +181,29 @@ while not game_over:
                 print(f"{idx}. {item.get_name()} - {item.get_num_uses()}")
             else:
                 print(f"{idx}. {item.get_name()}")
+    elif command in ["gift", "g"]:
+        if isinstance(inhabitant, Friend):
+            gifts = [item for item in inventory if not isinstance(item, Weapon)]
+            if len(gifts) > 0:
+                inhabitant.talk()
+                print(f"\nWhat gift will you present to {inhabitant.get_name()}?:")
+                for idx, item in enumerate(gifts):
+                    print(f"{idx}. {item.get_name()}")
+                
+                gift_index = input(">")
+                if gift_index.isdigit() and int(gift_index) < len(gifts):
+                    selected_gift = gifts[int(gift_index)]
+                    has_gifted = inhabitant.gift(selected_gift.get_name())
 
+                    if has_gifted:
+                        inventory_remove_item(inventory, selected_gift.get_name())
+                else:
+                    print("Invalid gift selection.")
+            else:
+                print(f"You have no gifts to present to {inhabitant.get_name()}.")
     elif command == 'fight' or command == 'f':
     # Handle fight logic
-        if inhabitant:
+        if isinstance(inhabitant, Enemy):
             if len(inventory) > 0:
                 inhabitant.talk()
 
