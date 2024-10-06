@@ -1,7 +1,6 @@
 from character import Enemy, Friend
 from item import Item, Weapon
 from room import Room
-from door import generate_locked_door
 
 def inventory_remove_item(inventory, item_name):
     for item in inventory:
@@ -48,8 +47,9 @@ sentinel.set_treasure(golems_heart)
 elder_grove = Room("Elder Willowroot's Grove")
 elder_grove.set_description("A majestic grove dominated by the ancient Elder Willowroot tree, a wise guardian of the forest.")
 elder_grove.set_character(willowroot)
+elder_grove.set_item(key)
 
-glade = Room("The Glade")
+glade = Room("Glade")
 glade.set_description("A peaceful clearing filled with soft grass and surrounded by tall trees.")
 glade.set_item(bark_amulet)
 
@@ -79,14 +79,14 @@ ruins_of_temple.set_description("Ancient, crumbling structures that hint at a ti
 ruins_of_temple.set_character(sentinel)
 
 # Link Rooms
-elder_grove.link_room(glade, "south")
-glade.link_room(mushroom_grove, "east") 
-mushroom_grove.link_room(darkened_thicket, "south")
-mushroom_grove.link_room(whispering_meadow, "east")
-darkened_thicket.link_room(glimmering_stream, "east")
-glimmering_stream.link_room(whispering_meadow, "north")
-whispering_meadow.link_room(hidden_fae_village, "east")
-hidden_fae_village.link_room(ruins_of_temple, "north")
+elder_grove.link_room(glade, "south", False)
+glade.link_room(mushroom_grove, "east", False) 
+mushroom_grove.link_room(darkened_thicket, "south", False)
+mushroom_grove.link_room(whispering_meadow, "east", True)
+darkened_thicket.link_room(glimmering_stream, "east", False)
+glimmering_stream.link_room(whispering_meadow, "north", False)
+whispering_meadow.link_room(hidden_fae_village, "east", False)
+hidden_fae_village.link_room(ruins_of_temple, "north", False)
 
 game_over = False
 inventory = []
@@ -94,149 +94,132 @@ current_room = elder_grove
 
 # Game loop
 while not game_over:
-    current_room.get_details()
-    print("\n")
-    actions = ["[i]nventory", "[n]orth", "[e]ast", "[s]outh", "[w]est"]
+    # while not current_room.get_locked_status(): 
+        current_room.get_details()
+        print("\n")
+        actions = ["[i]nventory", "[n]orth", "[e]ast", "[s]outh", "[w]est"]
 
-    # Check if there's a character in the room
-    inhabitant = current_room.get_character()
-    if inhabitant is not None and isinstance(inhabitant, Enemy):
-        actions.extend(["[t]alk", "[f]ight", "[r]ob"])
-        inhabitant.describe()
-    elif inhabitant is not None and isinstance(inhabitant, Friend):
-        actions.extend(["[t]alk", "[g]ift"])
-        inhabitant.describe()
+        # Check if there's a character in the room
+        inhabitant = current_room.get_character()
+        if inhabitant is not None and isinstance(inhabitant, Enemy):
+            actions.extend(["[t]alk", "[f]ight", "[r]ob"])
+            inhabitant.describe()
+        elif inhabitant is not None and isinstance(inhabitant, Friend):
+            actions.extend(["[t]alk", "[g]ift"])
+            inhabitant.describe()
 
-    # Check if there's an item in the room
-    item = current_room.get_item()
-    if item:
-        actions.append(f"[p]ick up {item.get_name()}")
-        print(f"You see a {item.get_name()} here.")
-        
-  # Get player input
-    print("\n---------------------------------------")
-    print("\nWhat action would you like to do?\n")
-    action_list = ""
-    for i, action in enumerate(actions):
-        print(action)
-    command = input(">").lower()
-  
-     # Allow moving with n, e, s, w commands
-    direction_map = {'n': 'north', 'e': 'east', 's': 'south', 'w': 'west'}
-    command = direction_map.get(command, command)  
-          
-    if command in ["north", "south", "east", "west"]:
-        # Move to another room if possible
-        linked_rooms = current_room.get_linked_rooms()
-        if command in linked_rooms:
-            current_room = current_room.move(command)
-        else:
-            random_door = generate_locked_door()
-            if random_door:
-                print("You have found a locked door")
-                should_unlock = input("Try to unlock [y]es [n]o ").lower()
-
-                if should_unlock == "y" and any(item.name == "key" for item in inventory):
-                    print("The door swings open")
-                elif should_unlock == "y" and not any(item.name == "key" for item in inventory):
-                    print("You need to find the key for this door")
-                else:
-                    print("You have decided to go a different way")
-
-            else:
-                print("You can't go that way.")
-
-    elif command in ["talk", "t"]:
-        if inhabitant:
-            inhabitant.talk()
-
-    elif command in ["rob", "r"]:
-        if inhabitant:
-            has_stolen = inhabitant.steal_from()
-            if has_stolen:
-                treasure = inhabitant.get_treasure()
-                inventory.append(treasure)
-                inhabitant.set_treasure(None)
-
-    elif command.startswith("pick up") or command == "p":
-        # Attempt to pick up the item in the room
+        # Check if there's an item in the room
+        item = current_room.get_item()
         if item:
-            if command == 'p':
-                command = f"pick up {item.get_name()}"
-
-            if command == f'pick up {item.get_name()}':
-                inventory.append(item)
-                print(f"You picked up the {item.get_name()}.")
-                current_room.set_item(None)  # Remove the item from the room after picking it up
-            else:
-                print(f"You can't pick up a {command[8:]} here.")
-        else:
-            print("There is no such item here.")
-
-    elif command in ["inventory", "i"]:
-        print("Inventory")
-        print("_____________________")
-        for idx, item in enumerate(inventory):
-            if isinstance(item, Weapon):
-                print(f"{idx}. {item.get_name()} - {item.get_num_uses()}")
-            else:
-                print(f"{idx}. {item.get_name()}")
-    elif command in ["gift", "g"]:
-        if isinstance(inhabitant, Friend):
-            gifts = [item for item in inventory if not isinstance(item, Weapon)]
-            if len(gifts) > 0:
+            actions.append(f"[p]ick up {item.get_name()}")
+            print(f"You see a {item.get_name()} here.")
+            
+    # Get player input
+        print("\n---------------------------------------")
+        print("\nWhat action would you like to do?\n")
+        action_list = ""
+        for i, action in enumerate(actions):
+            print(action)
+        command = input(">").lower()
+    
+        # Allow moving with n, e, s, w commands
+        linked_rooms = current_room.get_linked_rooms()
+        direction_map = {'n': 'north', 'e': 'east', 's': 'south', 'w': 'west'}
+        command = direction_map.get(command, command)  
+            
+        if command in ["north", "south", "east", "west"]:
+            current_room = current_room.move(command, inventory)
+        elif command in ["talk", "t"]:
+            if inhabitant:
                 inhabitant.talk()
-                print(f"\nWhat gift will you present to {inhabitant.get_name()}?:")
-                for idx, item in enumerate(gifts):
-                    print(f"{idx}. {item.get_name()}")
-                
-                gift_index = input(">")
-                if gift_index.isdigit() and int(gift_index) < len(gifts):
-                    selected_gift = gifts[int(gift_index)]
-                    has_gifted = inhabitant.gift(selected_gift.get_name())
 
-                    if has_gifted:
-                        inventory_remove_item(inventory, selected_gift.get_name())
+        elif command in ["rob", "r"]:
+            if inhabitant:
+                has_stolen = inhabitant.steal_from()
+                if has_stolen:
+                    treasure = inhabitant.get_treasure()
+                    inventory.append(treasure)
+                    inhabitant.set_treasure(None)
+
+        elif command.startswith("pick up") or command == "p":
+            # Attempt to pick up the item in the room
+            if item:
+                if command == 'p':
+                    command = f"pick up {item.get_name()}"
+
+                if command == f'pick up {item.get_name()}':
+                    inventory.append(item)
+                    print(f"You picked up the {item.get_name()}.")
+                    current_room.set_item(None)  # Remove the item from the room after picking it up
                 else:
-                    print("Invalid gift selection.")
+                    print(f"You can't pick up a {command[8:]} here.")
             else:
-                print(f"You have no gifts to present to {inhabitant.get_name()}.")
-    elif command == 'fight' or command == 'f':
-    # Handle fight logic
-        if isinstance(inhabitant, Enemy):
-            if len(inventory) > 0:
-                inhabitant.talk()
+                print("There is no such item here.")
 
-                weapons = [item for item in inventory if isinstance(item, Weapon)]
-
-                print(f"\nWhat will you fight {inhabitant.get_name()} with?:")
-                for idx, item in enumerate(weapons):
+        elif command in ["inventory", "i"]:
+            print("Inventory")
+            print("_____________________")
+            for idx, item in enumerate(inventory):
+                if isinstance(item, Weapon):
+                    print(f"{idx}. {item.get_name()} - {item.get_num_uses()}")
+                else:
                     print(f"{idx}. {item.get_name()}")
+        elif command in ["gift", "g"]:
+            if isinstance(inhabitant, Friend):
+                gifts = [item for item in inventory if not isinstance(item, Weapon)]
+                if len(gifts) > 0:
+                    inhabitant.talk()
+                    print(f"\nWhat gift will you present to {inhabitant.get_name()}?:")
+                    for idx, item in enumerate(gifts):
+                        print(f"{idx}. {item.get_name()}")
+                    
+                    gift_index = input(">")
+                    if gift_index.isdigit() and int(gift_index) < len(gifts):
+                        selected_gift = gifts[int(gift_index)]
+                        has_gifted = inhabitant.gift(selected_gift.get_name())
 
-                weapon_index = input(">")
-                
-                # Validate weapon index
-                if weapon_index.isdigit() and int(weapon_index) < len(weapons):
-                    selected_weapon = weapons[int(weapon_index)]
-
-                    has_won = inhabitant.fight(selected_weapon.get_name())
-
-                    if has_won:
-                        # Reduces the number of times a player can use a weapon 
-                        selected_weapon.reduce_num_uses()
-
-                        # If the number of uses reaches 0, remove the weapon from the inventory
-                        if selected_weapon.get_num_uses() == 0:
-                            inventory_remove_item(inventory, selected_weapon.get_name())
-
-                        current_room.set_character(None)  # Remove the character after defeating them
+                        if has_gifted:
+                            inventory_remove_item(inventory, selected_gift.get_name())
                     else:
-                        game_over = True
+                        print("Invalid gift selection.")
                 else:
-                    print("Invalid weapon selection.")
+                    print(f"You have no gifts to present to {inhabitant.get_name()}.")
+        elif command == 'fight' or command == 'f':
+        # Handle fight logic
+            if isinstance(inhabitant, Enemy):
+                if len(inventory) > 0:
+                    inhabitant.talk()
+
+                    weapons = [item for item in inventory if isinstance(item, Weapon)]
+
+                    print(f"\nWhat will you fight {inhabitant.get_name()} with?:")
+                    for idx, item in enumerate(weapons):
+                        print(f"{idx}. {item.get_name()}")
+
+                    weapon_index = input(">")
+                    
+                    # Validate weapon index
+                    if weapon_index.isdigit() and int(weapon_index) < len(weapons):
+                        selected_weapon = weapons[int(weapon_index)]
+
+                        has_won = inhabitant.fight(selected_weapon.get_name())
+
+                        if has_won:
+                            # Reduces the number of times a player can use a weapon 
+                            selected_weapon.reduce_num_uses()
+
+                            # If the number of uses reaches 0, remove the weapon from the inventory
+                            if selected_weapon.get_num_uses() == 0:
+                                inventory_remove_item(inventory, selected_weapon.get_name())
+
+                            current_room.set_character(None)  # Remove the character after defeating them
+                        else:
+                            game_over = True
+                    else:
+                        print("Invalid weapon selection.")
+                else:
+                    print("You have no weapon to fight with.")
             else:
-                print("You have no weapon to fight with.")
+                print("There's no enemy here.")
         else:
-            print("There's no enemy here.")
-    else:
-        print("I don't understand that command.")
+            print("I don't understand that command.")
